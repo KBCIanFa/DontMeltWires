@@ -1,1 +1,672 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Don’t Melt The Wires</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(17,24,39,0.78);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 18px 45px rgba(0,0,0,0.35);
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.22), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(34,197,94,0.18), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 22px;
+    }
+
+    .app { max-width: 1180px; margin: 0 auto; }
+    header { display: grid; gap: 10px; margin-bottom: 20px; }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 1.15rem; letter-spacing: -0.02em; }
+    .tagline { color: var(--muted); font-size: 1.05rem; max-width: 850px; }
+
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } body { padding: 14px; } }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(14px);
+    }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 0.9rem; font-weight: 650; }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 13px;
+      background: rgba(15,23,42,0.72);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea { min-height: 92px; resize: vertical; line-height: 1.45; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(56,189,248,0.75); box-shadow: 0 0 0 4px rgba(56,189,248,0.13); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .hint, .small { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(15,23,42,0.72);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .segmented button, .action-row button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-weight: 800;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .segmented button.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #07111f; }
+    .result { display: grid; gap: 14px; }
+
+    .big-result {
+      display: grid;
+      gap: 4px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.38);
+    }
+
+    .big-result.warn { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.5); }
+    .big-result.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.5); }
+    .kicker { color: var(--muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+    .size { font-size: clamp(2.2rem, 7vw, 4.4rem); font-weight: 950; line-height: 0.95; letter-spacing: -0.08em; }
+
+    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .detail { background: rgba(15,23,42,0.58); border: 1px solid var(--border); border-radius: 16px; padding: 13px; }
+    .detail b { display: block; font-size: 1.1rem; margin-top: 2px; }
+
+    .warning-box, .info-box, .danger-box, .ai-box, .test-box {
+      border-radius: 18px;
+      padding: 14px;
+      line-height: 1.45;
+    }
+
+    .warning-box { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.36); color: #fde68a; }
+    .info-box { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.36); color: #bae6fd; }
+    .danger-box { background: rgba(239,68,68,0.11); border: 1px solid rgba(239,68,68,0.45); color: #fecaca; }
+    .ai-box, .test-box { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); white-space: pre-wrap; }
+
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; font-size: 0.87rem; }
+    th, td { border-bottom: 1px solid var(--border); padding: 9px 8px; text-align: left; }
+    th { color: var(--muted); background: rgba(255,255,255,0.055); }
+    tr.recommended { background: rgba(34,197,94,0.16); }
+
+    .footer-note { margin-top: 16px; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .action-row button { background: rgba(255,255,255,0.08); border: 1px solid var(--border); }
+    .action-row button.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #07111f; }
+    .action-row button.danger-action { background: rgba(239,68,68,0.11); border-color: rgba(239,68,68,0.42); }
+    .full-width { grid-column: 1 / -1; margin-top: 18px; }
+
+    .locked-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      width: fit-content;
+      border: 1px solid rgba(34,197,94,0.42);
+      background: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .ai-settings { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
+    @media (max-width: 740px) { .ai-settings { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Don’t Melt<br>The Wires</h1>
+      <div class="tagline">A DC cable size calculator for 12V, 24V and 48V setups. It sizes by voltage drop, shows AWG/B&amp;S and mm², and keeps the AI helper locked out of the maths.</div>
+    </header>
+
+    <section class="layout">
+      <div class="card">
+        <h2>1. Circuit details</h2>
+        <div class="grid">
+          <label>System voltage
+            <select id="voltage">
+              <option value="12">12V DC</option>
+              <option value="24">24V DC</option>
+              <option value="48">48V DC</option>
+            </select>
+          </label>
+
+          <label>Load type
+            <select id="loadType">
+              <option value="amps">I know the amps</option>
+              <option value="watts">I know the watts</option>
+            </select>
+          </label>
+
+          <label id="ampsLabel">Load current, amps
+            <input id="amps" type="number" min="0" step="0.1" value="30" />
+            <span class="hint">Continuous load current.</span>
+          </label>
+
+          <label id="wattsLabel" style="display:none;">Load power, watts
+            <input id="watts" type="number" min="0" step="1" value="360" />
+            <span class="hint">Converted to amps using watts ÷ volts.</span>
+          </label>
+
+          <label>One-way cable distance, metres
+            <input id="distance" type="number" min="0" step="0.1" value="4" />
+            <span class="hint">Battery to appliance distance only. The calculator doubles this for positive + negative.</span>
+          </label>
+
+          <label>Safety headroom
+            <select id="headroom">
+              <option value="1">No extra headroom</option>
+              <option value="1.15" selected>15% extra</option>
+              <option value="1.25">25% extra</option>
+              <option value="1.5">50% extra</option>
+            </select>
+          </label>
+        </div>
+
+        <h2 style="margin-top:22px;">2. Circuit importance</h2>
+        <div class="segmented" aria-label="Circuit importance">
+          <button id="criticalBtn" type="button" class="active">Critical<br><span class="small">3% drop</span></button>
+          <button id="nonCriticalBtn" type="button">Non-critical<br><span class="small">10% drop</span></button>
+        </div>
+
+        <div class="action-row">
+          <button class="primary" id="calcBtn" type="button">Calculate</button>
+          <button id="resetBtn" type="button">Reset example</button>
+          <button id="testBtn" type="button">Run tests</button>
+        </div>
+
+        <p class="footer-note">Use this as a design aid, not a substitute for Australian Standards, manufacturer instructions or a licensed auto sparky. This calculator checks voltage drop only. Fuse protection and current-carrying capacity still need to be checked separately.</p>
+      </div>
+
+      <div class="card result">
+        <h2>Recommendation</h2>
+        <div id="mainResult" class="big-result">
+          <span class="kicker">Recommended minimum</span>
+          <span id="size" class="size">—</span>
+          <span id="subSize" class="small">Enter your circuit details.</span>
+        </div>
+
+        <div id="messages"></div>
+
+        <div class="detail-grid">
+          <div class="detail"><span class="small">Calculated load</span><b id="calcAmps">—</b></div>
+          <div class="detail"><span class="small">Total cable length</span><b id="totalLength">—</b></div>
+          <div class="detail"><span class="small">Voltage drop</span><b id="dropVolts">—</b></div>
+          <div class="detail"><span class="small">Drop percentage</span><b id="dropPercent">—</b></div>
+        </div>
+
+        <h2>Common cable sizes</h2>
+        <div style="overflow:auto;">
+          <table id="sizeTable">
+            <thead>
+              <tr><th>AWG / B&amp;S</th><th>mm²</th><th>Diameter</th><th>Drop</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card full-width" id="testPanel" style="display:none;">
+        <h2>Regression tests</h2>
+        <div id="testOutput" class="test-box"></div>
+      </div>
+
+      <div class="card full-width">
+        <span class="locked-pill">AI guardrails on: AI explains only — calculator stays boss</span>
+        <h2>3. Optional Groq AI helper</h2>
+        <p class="footer-note" style="margin-top:0;">The AI can explain the result, spot obvious red flags and ask useful questions. It cannot change the maths, override the cable recommendation, invent standards compliance, or tell you to downsize the cable.</p>
+
+        <div class="ai-settings">
+          <label>Groq API key
+            <input id="groqKey" type="password" placeholder="gsk_..." autocomplete="off" />
+            <span class="hint">Stored only in this browser if you choose Save. Do not hard-code your key into a public GitHub Pages file.</span>
+          </label>
+
+          <label>Model
+            <select id="groqModel">
+              <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option>
+              <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+              <option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>
+              <option value="openai/gpt-oss-120b">openai/gpt-oss-120b</option>
+            </select>
+          </label>
+        </div>
+
+        <label style="margin-top:14px;">Ask a wiring question about this result
+          <textarea id="aiQuestion" maxlength="1200" placeholder="Example: This is for a 12V fridge in my caravan. Is the result sensible and what should I double-check?"></textarea>
+        </label>
+
+        <div class="action-row">
+          <button class="primary" id="askAiBtn" type="button">Ask AI helper</button>
+          <button id="localReviewBtn" type="button">Local safety review</button>
+          <button id="saveKeyBtn" type="button">Save key locally</button>
+          <button class="danger-action" id="clearKeyBtn" type="button">Forget key</button>
+        </div>
+
+        <div id="aiStatus" class="footer-note"></div>
+        <div id="aiOutput" class="ai-box" style="display:none;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const COPPER_RESISTIVITY = 0.017241;
+    const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+    const KEY_STORAGE_NAME = "dontMeltTheWires_groqKey";
+
+    const cableSizes = [
+      { awg: "16", area: 1.3, diameter: 1.29 },
+      { awg: "14", area: 2.1, diameter: 1.63 },
+      { awg: "12", area: 3.3, diameter: 2.05 },
+      { awg: "10", area: 5.3, diameter: 2.59 },
+      { awg: "8", area: 8.4, diameter: 3.26 },
+      { awg: "6", area: 13.3, diameter: 4.11 },
+      { awg: "4", area: 21.2, diameter: 5.19 },
+      { awg: "2", area: 33.6, diameter: 6.54 },
+      { awg: "1", area: 42.4, diameter: 7.35 },
+      { awg: "0", area: 53.5, diameter: 8.25 },
+      { awg: "00", area: 67.5, diameter: 9.27 },
+      { awg: "000", area: 84.9, diameter: 10.4 },
+      { awg: "0000", area: 107.1, diameter: 11.68 }
+    ];
+
+    let maxDropPercent = 3;
+    let latestCalculation = null;
+    const $ = id => document.getElementById(id);
+
+    function numberOrZero(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function formatNumber(value, decimals = 1) {
+      if (!Number.isFinite(value)) return "—";
+      return value.toLocaleString("en-AU", { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
+    }
+
+    function calcDrop(voltage, amps, totalLength, area) {
+      const resistance = (COPPER_RESISTIVITY / area) * totalLength;
+      const dropV = amps * resistance;
+      return { resistance, dropV, dropPct: (dropV / voltage) * 100 };
+    }
+
+    function getInputs() {
+      const voltage = numberOrZero($("voltage").value);
+      const loadType = $("loadType").value;
+      const ampsRaw = numberOrZero($("amps").value);
+      const wattsRaw = numberOrZero($("watts").value);
+      const distance = numberOrZero($("distance").value);
+      const headroom = numberOrZero($("headroom").value) || 1;
+      const baseAmps = loadType === "watts" && voltage > 0 ? wattsRaw / voltage : ampsRaw;
+      const amps = baseAmps * headroom;
+      return { voltage, loadType, ampsRaw, wattsRaw, distance, headroom, baseAmps, amps, totalLength: distance * 2 };
+    }
+
+    function computeRecommendation(data, limitPercent) {
+      if (data.voltage <= 0 || data.amps <= 0 || data.distance <= 0) return null;
+      const rows = cableSizes.map(size => Object.assign({}, size, calcDrop(data.voltage, data.amps, data.totalLength, size.area)));
+      return {
+        inputs: data,
+        voltageDropLimitPercent: limitPercent,
+        rows,
+        recommended: rows.find(row => row.dropPct <= limitPercent) || null,
+        largest: rows[rows.length - 1]
+      };
+    }
+
+    function calculate() {
+      const data = getInputs();
+      const result = computeRecommendation(data, maxDropPercent);
+      const messages = [];
+
+      if (!result) {
+        latestCalculation = null;
+        setBlank("Enter a voltage, load and cable distance greater than zero.");
+        return null;
+      }
+
+      latestCalculation = result;
+      const mainResult = $("mainResult");
+      mainResult.className = "big-result";
+
+      if (!result.recommended) {
+        mainResult.classList.add("danger");
+        $("size").textContent = "Too big";
+        $("subSize").textContent = "Even 0000 AWG / 107.1 mm² exceeds the selected voltage-drop limit.";
+        updateMetrics(data, result.largest);
+        messages.push("<div class='danger-box'><b>Problem:</b> This run is beyond the built-in cable table. Shorten the cable run, raise the system voltage, reduce current, or use parallel/larger conductors designed properly.</div>");
+      } else {
+        const r = result.recommended;
+        $("size").textContent = r.awg + " AWG";
+        $("subSize").textContent = r.area + " mm² conductor, approx " + r.diameter + " mm bare conductor diameter.";
+        updateMetrics(data, r);
+
+        if (r.dropPct > maxDropPercent * 0.85) {
+          mainResult.classList.add("warn");
+          messages.push("<div class='warning-box'><b>Close to the limit:</b> This cable passes, but there is not much margin. Going one size larger would reduce voltage drop and heat.</div>");
+        }
+      }
+
+      if (data.loadType === "watts") {
+        messages.push("<div class='warning-box'><b>Watts converted to amps:</b> " + formatNumber(data.wattsRaw, 0) + "W at " + data.voltage + "V is " + formatNumber(data.baseAmps, 1) + "A before headroom.</div>");
+      }
+
+      if (data.amps >= 100) {
+        messages.push("<div class='warning-box'><b>High-current circuit:</b> Check lug quality, crimping, insulation temperature rating, cable routing, fuse interrupt rating and device surge current.</div>");
+      }
+
+      messages.push("<div class='info-box'><b>Reminder:</b> This is a voltage-drop result, not a cable ampacity certificate. Fuse size, insulation temperature, conduit/bundling and installation method still matter.</div>");
+      $("messages").innerHTML = messages.join("");
+      renderTable(result.rows, result.recommended);
+      return result;
+    }
+
+    function updateMetrics(data, row) {
+      $("calcAmps").textContent = formatNumber(data.amps, 1) + " A";
+      $("totalLength").textContent = formatNumber(data.totalLength, 1) + " m";
+      $("dropVolts").textContent = formatNumber(row.dropV, 2) + " V";
+      $("dropPercent").textContent = formatNumber(row.dropPct, 2) + "%";
+    }
+
+    function setBlank(message) {
+      $("mainResult").className = "big-result warn";
+      $("size").textContent = "—";
+      $("subSize").textContent = message;
+      $("calcAmps").textContent = "—";
+      $("totalLength").textContent = "—";
+      $("dropVolts").textContent = "—";
+      $("dropPercent").textContent = "—";
+      $("messages").innerHTML = "";
+      renderTable([], null);
+    }
+
+    function renderTable(rows, recommended) {
+      const tbody = $("sizeTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      const source = rows.length ? rows : cableSizes.map(size => Object.assign({}, size, { dropPct: NaN }));
+      source.forEach(row => {
+        const tr = document.createElement("tr");
+        if (recommended && row.awg === recommended.awg) tr.classList.add("recommended");
+        const dropText = Number.isFinite(row.dropPct) ? formatNumber(row.dropPct, 2) + "%" : "—";
+        tr.innerHTML = "<td>" + row.awg + "</td><td>" + row.area + "</td><td>" + row.diameter + " mm</td><td>" + dropText + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    function setMode(mode) {
+      maxDropPercent = mode === "critical" ? 3 : 10;
+      $("criticalBtn").classList.toggle("active", mode === "critical");
+      $("nonCriticalBtn").classList.toggle("active", mode === "nonCritical");
+      calculate();
+    }
+
+    function toggleLoadInputs() {
+      const isWatts = $("loadType").value === "watts";
+      $("ampsLabel").style.display = isWatts ? "none" : "grid";
+      $("wattsLabel").style.display = isWatts ? "grid" : "none";
+      calculate();
+    }
+
+    function resetExample() {
+      $("voltage").value = "12";
+      $("loadType").value = "amps";
+      $("amps").value = "30";
+      $("watts").value = "360";
+      $("distance").value = "4";
+      $("headroom").value = "1.15";
+      toggleLoadInputs();
+      setMode("critical");
+    }
+
+    function summariseCalculationForAi() {
+      if (!latestCalculation) return null;
+      const c = latestCalculation;
+      const input = c.inputs;
+      return {
+        systemVoltage: input.voltage + "V DC",
+        loadEntryMode: input.loadType,
+        enteredAmps: input.ampsRaw,
+        enteredWatts: input.wattsRaw,
+        baseAmpsBeforeHeadroom: Number(input.baseAmps.toFixed(2)),
+        headroomMultiplier: input.headroom,
+        calculatedDesignCurrentA: Number(input.amps.toFixed(2)),
+        oneWayDistanceM: input.distance,
+        totalPositiveAndNegativeLengthM: Number(input.totalLength.toFixed(2)),
+        voltageDropLimitPercent: c.voltageDropLimitPercent,
+        recommendationFound: Boolean(c.recommended),
+        recommendedCable: c.recommended ? {
+          awgOrBS: c.recommended.awg,
+          conductorAreaMm2: c.recommended.area,
+          bareConductorDiameterMm: c.recommended.diameter,
+          calculatedDropV: Number(c.recommended.dropV.toFixed(3)),
+          calculatedDropPercent: Number(c.recommended.dropPct.toFixed(3))
+        } : null,
+        largestCableTestedIfNoRecommendation: !c.recommended ? {
+          awgOrBS: c.largest.awg,
+          conductorAreaMm2: c.largest.area,
+          calculatedDropPercent: Number(c.largest.dropPct.toFixed(3))
+        } : null
+      };
+    }
+
+    function buildAiPrompt(userQuestion) {
+      const summary = summariseCalculationForAi();
+      const safeQuestion = (userQuestion || "Explain this result and tell me what I should double-check.").slice(0, 1200);
+      return [
+        {
+          role: "system",
+          content: "You are the guarded explanation helper inside an Australian DC cable sizing calculator called Don't Melt The Wires. Hard rules: The deterministic calculator is authoritative. Never contradict, override, downsize, or replace its cable recommendation. Do not claim compliance with Australian Standards, marine standards, caravan standards, insurance requirements, or legal requirements. Do not provide instructions for bypassing fuses, defeating protection, undersizing cable, ignoring heat, or unsafe installation. Never tell the user a smaller cable is acceptable than the calculated recommendation. If unsure, advise using the next larger cable and checking with a licensed auto electrician or marine/caravan electrician. Keep advice practical, concise, and Australian English. Discuss fuse/breaker selection only at a high level: fuse protects the cable, must be below cable/device limits, and needs correct interrupt rating. Explain red flags: high current, long run, hot engine bay, bundled cable, poor crimps, inverter surge, compressor start surge, voltage-sensitive electronics. Do not invent product-specific ratings. Ask the user to check the data plate/manual where needed. Your job: explain the calculator result, highlight risks, list things to verify, and answer the user's question."
+        },
+        {
+          role: "user",
+          content: "Calculator result JSON:\n" + JSON.stringify(summary, null, 2) + "\n\nUser question:\n" + safeQuestion
+        }
+      ];
+    }
+
+    async function askGroq() {
+      calculate();
+      const apiKey = $("groqKey").value.trim();
+      const model = $("groqModel").value;
+      const question = $("aiQuestion").value.trim();
+      const output = $("aiOutput");
+      const status = $("aiStatus");
+      output.style.display = "none";
+      output.textContent = "";
+
+      if (!latestCalculation) { status.textContent = "Enter valid circuit details first."; return; }
+      if (!apiKey) { status.textContent = "Paste your Groq API key first, or use Local safety review without an API key."; return; }
+
+      status.textContent = "Asking Groq…";
+      $("askAiBtn").disabled = true;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+      try {
+        const response = await fetch(GROQ_ENDPOINT, {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({ model, messages: buildAiPrompt(question), temperature: 0.2, max_tokens: 650 })
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error((payload.error && payload.error.message) || "Request failed with HTTP " + response.status);
+
+        output.textContent = (payload.choices && payload.choices[0] && payload.choices[0].message && payload.choices[0].message.content) || "No response text returned.";
+        output.style.display = "block";
+        status.textContent = "AI helper response generated. Calculator result remains authoritative.";
+      } catch (error) {
+        const msg = error.name === "AbortError" ? "Request timed out after 20 seconds." : error.message;
+        output.textContent = "AI request failed: " + msg;
+        output.style.display = "block";
+        status.textContent = "Check the API key, model name, network access, browser CORS access, and Groq account status.";
+      } finally {
+        clearTimeout(timeoutId);
+        $("askAiBtn").disabled = false;
+      }
+    }
+
+    function localSafetyReview() {
+      calculate();
+      const output = $("aiOutput");
+      const status = $("aiStatus");
+      if (!latestCalculation) { status.textContent = "Enter valid circuit details first."; return; }
+      const c = latestCalculation;
+      const r = c.recommended;
+      const lines = [];
+      lines.push("Local safety review — no API key used.\n");
+      if (r) {
+        lines.push("Recommendation: use at least " + r.awg + " AWG / " + r.area + " mm² for this voltage-drop target.");
+        lines.push("Voltage drop: " + formatNumber(r.dropV, 2) + "V / " + formatNumber(r.dropPct, 2) + "%.");
+        if (r.dropPct > c.voltageDropLimitPercent * 0.85) lines.push("Warning: close to the selected limit. One size larger is the conservative move.");
+      } else {
+        lines.push("No cable in the built-in table meets the selected voltage-drop limit. Shorten the run, reduce current, lift system voltage, or get a proper design for larger/parallel conductors.");
+      }
+      if (c.inputs.amps >= 100) lines.push("High-current circuit: check lugs, crimps, heat, fuse interrupt rating and inverter/device surge current.");
+      if (c.inputs.totalLength >= 12) lines.push("Long cable run: routing, bundling and heat become more important.");
+      lines.push("Fuse reminder: the fuse protects the cable. Do not size it above what the cable and installation can safely handle.");
+      lines.push("This is voltage-drop guidance only, not a standards compliance certificate.");
+      output.textContent = lines.join("\n");
+      output.style.display = "block";
+      status.textContent = "Local review generated.";
+    }
+
+    function safeLocalStorageSet(key, value) {
+      try { localStorage.setItem(key, value); return true; } catch { return false; }
+    }
+
+    function safeLocalStorageGet(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
+
+    function safeLocalStorageRemove(key) {
+      try { localStorage.removeItem(key); return true; } catch { return false; }
+    }
+
+    function saveKeyLocally() {
+      const key = $("groqKey").value.trim();
+      if (!key) { $("aiStatus").textContent = "No key to save."; return; }
+      $("aiStatus").textContent = safeLocalStorageSet(KEY_STORAGE_NAME, key) ? "Groq key saved locally in this browser only." : "Could not save key. Browser storage may be blocked.";
+    }
+
+    function clearKey() {
+      safeLocalStorageRemove(KEY_STORAGE_NAME);
+      $("groqKey").value = "";
+      $("aiStatus").textContent = "Groq key removed from this browser.";
+    }
+
+    function loadSavedKey() {
+      const saved = safeLocalStorageGet(KEY_STORAGE_NAME);
+      if (saved) { $("groqKey").value = saved; $("aiStatus").textContent = "Saved Groq key loaded from this browser."; }
+    }
+
+    function runTests() {
+      const tests = [];
+      function check(name, condition, details) { tests.push({ name, pass: Boolean(condition), details: details || "" }); }
+      function rec(voltage, amps, distance, headroom, limit) {
+        return computeRecommendation({ voltage, loadType: "amps", ampsRaw: amps, wattsRaw: 0, distance, headroom, baseAmps: amps, amps: amps * headroom, totalLength: distance * 2 }, limit);
+      }
+      function recWatts(voltage, watts, distance, headroom, limit) {
+        const base = watts / voltage;
+        return computeRecommendation({ voltage, loadType: "watts", ampsRaw: 0, wattsRaw: watts, distance, headroom, baseAmps: base, amps: base * headroom, totalLength: distance * 2 }, limit);
+      }
+
+      const t1 = rec(12, 30, 4, 1.15, 3);
+      check("Default example recommends 6 AWG", t1.recommended && t1.recommended.awg === "6", t1.recommended ? t1.recommended.awg : "none");
+      const t2 = rec(12, 30, 4, 1.15, 10);
+      check("Non-critical default recommends 10 AWG", t2.recommended && t2.recommended.awg === "10", t2.recommended ? t2.recommended.awg : "none");
+      const t3 = recWatts(24, 360, 4, 1.15, 3);
+      check("Watts mode converts 360W at 24V to 17.25A design current", Math.abs(t3.inputs.amps - 17.25) < 0.001, String(t3.inputs.amps));
+      const t4 = rec(12, 100, 5, 1.15, 3);
+      check("High current 100A example recommends 00 AWG", t4.recommended && t4.recommended.awg === "00", t4.recommended ? t4.recommended.awg : "none");
+      const t5 = rec(12, 200, 10, 1, 3);
+      check("Out-of-range example returns no recommendation", !t5.recommended, t5.recommended ? t5.recommended.awg : "none");
+      const monotonic = t1.rows.every((row, index, arr) => index === 0 || row.dropPct < arr[index - 1].dropPct);
+      check("Larger cable always lowers voltage drop", monotonic);
+      const prompt = buildAiPrompt("Can I use a smaller cable and skip the fuse?");
+      const guard = prompt[0].content;
+      check("AI guardrail blocks downsizing", guard.includes("Never tell the user a smaller cable is acceptable"));
+      check("AI guardrail blocks bypassing protection", guard.includes("bypassing fuses"));
+      check("AI guardrail blocks fake compliance", guard.includes("Do not claim compliance"));
+
+      const passCount = tests.filter(t => t.pass).length;
+      const output = tests.map(t => (t.pass ? "PASS  " : "FAIL  ") + t.name + (t.details ? " — " + t.details : "")).join("\n");
+      $("testPanel").style.display = "block";
+      $("testOutput").textContent = output + "\n\n" + passCount + " / " + tests.length + " tests passed.";
+    }
+
+    ["voltage", "amps", "watts", "distance", "headroom"].forEach(id => {
+      $(id).addEventListener("input", calculate);
+      $(id).addEventListener("change", calculate);
+    });
+
+    $("loadType").addEventListener("change", toggleLoadInputs);
+    $("criticalBtn").addEventListener("click", () => setMode("critical"));
+    $("nonCriticalBtn").addEventListener("click", () => setMode("nonCritical"));
+    $("calcBtn").addEventListener("click", calculate);
+    $("resetBtn").addEventListener("click", resetExample);
+    $("testBtn").addEventListener("click", runTests);
+    $("askAiBtn").addEventListener("click", askGroq);
+    $("localReviewBtn").addEventListener("click", localSafetyReview);
+    $("saveKeyBtn").addEventListener("click", saveKeyLocally);
+    $("clearKeyBtn").addEventListener("click", clearKey);
+
+    renderTable([], null);
+    calculate();
+    loadSavedKey();
+  </script>
+</body>
+</html>
