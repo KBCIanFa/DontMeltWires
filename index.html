@@ -242,8 +242,8 @@
     .danger-box { background: rgba(239,68,68,0.11); border: 1px solid rgba(239,68,68,0.45); color: #fecaca; }
     .ai-box, .test-box { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); white-space: pre-wrap; }
 
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; font-size: 0.87rem; min-width: 680px; }
-    th, td { border-bottom: 1px solid var(--border); padding: 9px 8px; text-align: left; vertical-align: middle; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; font-size: 0.84rem; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--border); padding: 9px 7px; text-align: left; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
     th { color: var(--muted); background: rgba(255,255,255,0.055); }
     tr.recommended { background: rgba(34,197,94,0.16); }
 
@@ -278,6 +278,57 @@
 
     .ai-settings { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
     @media (max-width: 740px) { .ai-settings { grid-template-columns: 1fr; } }
+
+    .assist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 860px) { .assist-grid { grid-template-columns: 1fr; } }
+
+    .check-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    @media (max-width: 680px) { .check-summary { grid-template-columns: 1fr 1fr; } }
+
+    .check-tile {
+      padding: 13px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.58);
+    }
+
+    .check-tile span { display: block; color: var(--muted); font-size: 0.74rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+    .check-tile b { display: block; margin-top: 4px; font-size: 1.25rem; }
+
+    .check-list { display: grid; gap: 10px; margin-top: 14px; }
+    .check-row {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.5);
+    }
+    @media (max-width: 560px) { .check-row { grid-template-columns: 1fr; } }
+
+    .status-pill {
+      display: inline-flex;
+      justify-content: center;
+      width: fit-content;
+      min-width: 78px;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 0.72rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .pass { background: rgba(34,197,94,0.14); color: #bbf7d0; border: 1px solid rgba(34,197,94,0.4); }
+    .warn { background: rgba(245,158,11,0.14); color: #fde68a; border: 1px solid rgba(245,158,11,0.4); }
+    .fail { background: rgba(239,68,68,0.14); color: #fecaca; border: 1px solid rgba(239,68,68,0.4); }
+    .review { background: rgba(56,189,248,0.14); color: #bae6fd; border: 1px solid rgba(56,189,248,0.4); }
   </style>
 </head>
 <body>
@@ -408,14 +459,72 @@
 
       <div class="card result">
         <h2>Common cable sizes</h2>
-        <div style="overflow:auto;">
+        <div>
           <table id="sizeTable">
             <thead>
-              <tr><th>Icon</th><th>AWG / B&amp;S</th><th>mm²</th><th>Diameter</th><th>Drop</th><th>Status</th></tr>
+              <tr><th style="width:24%;">Icon</th><th style="width:13%;">AWG</th><th style="width:13%;">mm²</th><th style="width:16%;">Dia.</th><th style="width:15%;">Drop</th><th style="width:19%;">Status</th></tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="card full-width">
+        <span class="locked-pill">Compliance Assist — not certification</span>
+        <h2>Hardware-aware design checks</h2>
+        <p class="footer-note" style="margin-top:0;">This section uses a small built-in hardware database to flag obvious design problems. It does not certify compliance with Australian Standards, legislation, insurance requirements, or manufacturer instructions.</p>
+
+        <div class="assist-grid">
+          <label>Selected cable product
+            <select id="hardwareCable"></select>
+            <span class="hint">Used for rough current-capacity and insulation notes.</span>
+          </label>
+
+          <label>Fuse / breaker type
+            <select id="hardwareFuse"></select>
+            <span class="hint">Fuse rating should protect the cable and suit the DC system voltage.</span>
+          </label>
+
+          <label>Fuse / breaker rating, amps
+            <input id="fuseRating" type="number" min="0" step="1" value="40" />
+            <span class="hint">This is checked against the selected cable and load.</span>
+          </label>
+
+          <label>Connector
+            <select id="hardwareConnector"></select>
+            <span class="hint">Flags obvious connector current mismatches.</span>
+          </label>
+
+          <label>Installation environment
+            <select id="installEnvironment">
+              <option value="interior">Interior / protected</option>
+              <option value="chassis">Chassis / underbody</option>
+              <option value="engineBay">Engine bay / hot area</option>
+              <option value="bundled">Bundled or enclosed conduit</option>
+            </select>
+          </label>
+
+          <label>Protection near source
+            <select id="sourceProtection">
+              <option value="yes">Fuse/breaker close to battery/source</option>
+              <option value="unknown">Not sure</option>
+              <option value="no">No source protection</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="primary" id="runAssistBtn">Run design checks</button>
+        </div>
+
+        <div class="check-summary">
+          <div class="check-tile"><span>Overall</span><b id="assistOverall">—</b></div>
+          <div class="check-tile"><span>Pass</span><b id="assistPass">0</b></div>
+          <div class="check-tile"><span>Warnings</span><b id="assistWarn">0</b></div>
+          <div class="check-tile"><span>Fails</span><b id="assistFail">0</b></div>
+        </div>
+
+        <div id="assistOutput" class="check-list"></div>
       </div>
 
       <div class="card full-width" id="testPanel" style="display:none;">
@@ -483,6 +592,35 @@
       { awg: "0", area: 53.5, diameter: 8.25 }, { awg: "00", area: 67.5, diameter: 9.27 }, { awg: "000", area: 84.9, diameter: 10.4 },
       { awg: "0000", area: 107.1, diameter: 11.68 }
     ].map((item, index) => Object.assign({}, item, { icon: iconDefinitions[index] }));
+
+    const hardwareDb = {
+      cables: [
+        { id: "auto6", name: "Generic 6 mm² auto cable", area: 6, maxA: 50, temp: "Typical PVC automotive insulation", note: "Small auxiliary loads only. Check actual maker data." },
+        { id: "bs8", name: "8 B&S / approx 8.4 mm²", area: 8.4, maxA: 65, temp: "Common automotive twin cable class", note: "Good for moderate DC loads when installed correctly." },
+        { id: "bs6", name: "6 B&S / approx 13.3 mm²", area: 13.3, maxA: 90, temp: "Common caravan / 4WD DC cable class", note: "Often used for fridge, charger and auxiliary feeds." },
+        { id: "bs4", name: "4 B&S / approx 21.2 mm²", area: 21.2, maxA: 125, temp: "Larger DC feed cable", note: "Useful for higher current or longer runs." },
+        { id: "bs2", name: "2 B&S / approx 33.6 mm²", area: 33.6, maxA: 170, temp: "High-current DC cable", note: "Check lug, crimp and fuse hardware carefully." },
+        { id: "mm50", name: "50 mm² battery / welding cable", area: 50, maxA: 220, temp: "Heavy flexible copper cable", note: "For serious inverter/battery feeds when correctly protected." },
+        { id: "mm70", name: "70 mm² battery / welding cable", area: 70, maxA: 300, temp: "Very heavy flexible copper cable", note: "Needs proper lugs, tooling and strain relief." }
+      ],
+      fuses: [
+        { id: "blade", name: "Blade fuse", maxA: 40, maxV: 32, note: "Usually for small circuits, not large inverter feeds." },
+        { id: "midi", name: "MIDI fuse", maxA: 150, maxV: 32, note: "Common compact DC fuse. Check interrupt rating and holder rating." },
+        { id: "mega", name: "MEGA fuse", maxA: 300, maxV: 32, note: "Common high-current DC fuse. Check holder and interrupt rating." },
+        { id: "anl", name: "ANL fuse", maxA: 500, maxV: 80, note: "Common high-current DC fuse for battery/inverter systems." },
+        { id: "mrbf", name: "MRBF terminal fuse", maxA: 300, maxV: 58, note: "Useful close to battery terminals if installed to maker specs." },
+        { id: "breaker", name: "Resettable DC breaker", maxA: 200, maxV: 48, note: "Quality varies. Must be DC rated and correctly installed." }
+      ],
+      connectors: [
+        { id: "none", name: "No connector / hard wired", maxA: 999, note: "Still requires correct lugs, strain relief and protection." },
+        { id: "cig", name: "Cigarette socket", maxA: 10, note: "Poor choice for serious loads; often unreliable at higher current." },
+        { id: "merit", name: "Merit plug", maxA: 15, note: "Better than cigarette sockets but still a light-current connector." },
+        { id: "xt60", name: "XT60", maxA: 60, note: "Check genuine connector rating and installation method." },
+        { id: "sb50", name: "Anderson-style SB50", maxA: 50, note: "Common caravan/4WD connector class. Check genuine part rating." },
+        { id: "sb120", name: "Anderson-style SB120", maxA: 120, note: "Higher-current connector class." },
+        { id: "sb175", name: "Anderson-style SB175", maxA: 175, note: "Heavy connector class for high-current circuits." }
+      ]
+    };
 
     let maxDropPercent = 3;
     let latestCalculation = null;
@@ -690,9 +828,113 @@
         if (recommended && row.awg === recommended.awg) tr.classList.add("recommended");
         const dropText = Number.isFinite(row.dropPct) ? formatNumber(row.dropPct, 2) + "%" : "—";
         const status = recommended && row.awg === recommended.awg ? "Recommended" : Number.isFinite(row.dropPct) ? (row.dropPct <= maxDropPercent ? "Passes" : "Too much drop") : "—";
-        tr.innerHTML = "<td><span class='table-icon'>" + iconSvg(row.icon, 24) + row.icon.shape + "</span></td><td>" + row.awg + "</td><td>" + row.area + "</td><td>" + row.diameter + " mm</td><td>" + dropText + "</td><td>" + status + "</td>";
+        const shortStatus = status === "Too much drop" ? "Too high" : status;
+        tr.innerHTML = "<td><span class='table-icon'>" + iconSvg(row.icon, 24) + "<span>" + row.icon.shape + "</span></span></td><td>" + row.awg + "</td><td>" + row.area + "</td><td>" + row.diameter + " mm</td><td>" + dropText + "</td><td>" + shortStatus + "</td>";
         tbody.appendChild(tr);
       });
+    }
+
+    function populateHardwareSelects() {
+      const cableSelect = $("hardwareCable");
+      const fuseSelect = $("hardwareFuse");
+      const connectorSelect = $("hardwareConnector");
+      cableSelect.innerHTML = hardwareDb.cables.map(item => `<option value="${item.id}">${item.name}</option>`).join("");
+      fuseSelect.innerHTML = hardwareDb.fuses.map(item => `<option value="${item.id}">${item.name}</option>`).join("");
+      connectorSelect.innerHTML = hardwareDb.connectors.map(item => `<option value="${item.id}">${item.name}</option>`).join("");
+      cableSelect.value = "bs6";
+      fuseSelect.value = "midi";
+      connectorSelect.value = "sb50";
+    }
+
+    function findHardware(kind, id) {
+      return hardwareDb[kind].find(item => item.id === id) || hardwareDb[kind][0];
+    }
+
+    function addCheck(list, status, title, detail) {
+      list.push({ status, title, detail });
+    }
+
+    function runDesignChecks() {
+      calculate();
+      const output = $("assistOutput");
+      output.innerHTML = "";
+      if (!latestCalculation) {
+        output.innerHTML = "<div class='check-row'><span class='status-pill warn'>Check</span><div><b>Enter circuit details first</b><div class='small'>The design checks need a valid voltage, load and cable run.</div></div></div>";
+        return [];
+      }
+
+      const c = latestCalculation;
+      const data = c.inputs;
+      const selectedCable = findHardware("cables", $("hardwareCable").value);
+      const fuse = findHardware("fuses", $("hardwareFuse").value);
+      const connector = findHardware("connectors", $("hardwareConnector").value);
+      const fuseRating = numberOrZero($("fuseRating").value);
+      const environment = $("installEnvironment").value;
+      const sourceProtection = $("sourceProtection").value;
+      const checks = [];
+
+      if (c.recommended) {
+        const requiredArea = c.recommended.area;
+        if (selectedCable.area >= requiredArea) addCheck(checks, "pass", "Selected cable meets voltage-drop size", `${selectedCable.name} is ${selectedCable.area} mm². Calculator minimum is ${requiredArea} mm².`);
+        else addCheck(checks, "fail", "Selected cable is smaller than calculator result", `${selectedCable.name} is ${selectedCable.area} mm² but the calculator recommends at least ${requiredArea} mm².`);
+      } else {
+        addCheck(checks, "fail", "No built-in cable meets voltage-drop target", "The calculated run is beyond the built-in cable table. Redesign before selecting hardware.");
+      }
+
+      const derate = environment === "engineBay" ? 0.7 : environment === "bundled" ? 0.8 : environment === "chassis" ? 0.9 : 1;
+      const adjustedCableA = selectedCable.maxA * derate;
+      if (adjustedCableA >= data.amps * 1.1) addCheck(checks, "pass", "Cable current margin looks reasonable", `${selectedCable.name}: rough adjusted limit ${formatNumber(adjustedCableA, 0)}A vs design current ${formatNumber(data.amps, 1)}A.`);
+      else if (adjustedCableA >= data.amps) addCheck(checks, "warn", "Cable current margin is tight", `${selectedCable.name}: rough adjusted limit ${formatNumber(adjustedCableA, 0)}A vs design current ${formatNumber(data.amps, 1)}A. Consider upsizing.`);
+      else addCheck(checks, "fail", "Cable current estimate is below design current", `${selectedCable.name}: rough adjusted limit ${formatNumber(adjustedCableA, 0)}A vs design current ${formatNumber(data.amps, 1)}A.`);
+
+      if (fuseRating <= 0) addCheck(checks, "fail", "Fuse rating missing", "Enter a fuse or breaker rating in amps.");
+      else {
+        if (fuseRating < data.amps) addCheck(checks, "fail", "Fuse rating below design current", `${formatNumber(fuseRating, 0)}A fuse may nuisance-blow below the calculated design current of ${formatNumber(data.amps, 1)}A.`);
+        else if (fuseRating <= adjustedCableA) addCheck(checks, "pass", "Fuse rating is below rough cable limit", `${formatNumber(fuseRating, 0)}A fuse vs rough adjusted cable limit ${formatNumber(adjustedCableA, 0)}A.`);
+        else addCheck(checks, "fail", "Fuse may not protect selected cable", `${formatNumber(fuseRating, 0)}A fuse is above the rough adjusted cable limit of ${formatNumber(adjustedCableA, 0)}A.`);
+      }
+
+      if (fuseRating > fuse.maxA) addCheck(checks, "fail", "Fuse type rating exceeded", `${fuse.name} database max is ${fuse.maxA}A. Selected fuse rating is ${formatNumber(fuseRating, 0)}A.`);
+      else addCheck(checks, "pass", "Fuse type current range", `${fuse.name}: ${fuse.note}`);
+
+      if (data.voltage > fuse.maxV) addCheck(checks, "fail", "Fuse voltage rating issue", `${fuse.name} database max is ${fuse.maxV}V. System is ${data.voltage}V.`);
+      else addCheck(checks, "pass", "Fuse voltage range", `${fuse.name} database voltage range covers this ${data.voltage}V system.`);
+
+      if (connector.maxA >= data.amps) addCheck(checks, "pass", "Connector current range", `${connector.name}: rough connector class ${connector.maxA}A vs design current ${formatNumber(data.amps, 1)}A.`);
+      else addCheck(checks, "fail", "Connector is undersized", `${connector.name}: rough connector class ${connector.maxA}A vs design current ${formatNumber(data.amps, 1)}A.`);
+
+      if (sourceProtection === "yes") addCheck(checks, "pass", "Source protection declared", "Fuse/breaker is marked as close to the battery/source. Confirm actual installation distance and mounting.");
+      else if (sourceProtection === "unknown") addCheck(checks, "warn", "Source protection uncertain", "Confirm there is correctly rated protection close to the battery/source.");
+      else addCheck(checks, "fail", "No source protection", "A battery-fed cable without source protection is a serious fire risk.");
+
+      if (environment === "engineBay") addCheck(checks, "warn", "Hot installation environment", "Engine bay heat, vibration and abrasion require suitable insulation, routing, support and extra conservatism.");
+      if (environment === "chassis") addCheck(checks, "warn", "Chassis / underbody routing", "Check abrasion protection, grommets, water exposure, stone damage, clips and strain relief.");
+      if (environment === "bundled") addCheck(checks, "warn", "Bundled or enclosed cable", "Bundling or conduit can reduce cooling. Current-carrying capacity may need derating.");
+
+      addCheck(checks, "review", "Australian compliance review required", "This app is a design assistant only. It does not certify AS/NZS compliance. Check the current standard, manufacturer instructions and use a qualified installer where required.");
+
+      renderChecks(checks);
+      return checks;
+    }
+
+    function renderChecks(checks) {
+      const counts = checks.reduce((acc, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, {});
+      const fail = counts.fail || 0;
+      const warn = counts.warn || 0;
+      const pass = counts.pass || 0;
+      $("assistPass").textContent = String(pass);
+      $("assistWarn").textContent = String(warn);
+      $("assistFail").textContent = String(fail);
+      $("assistOverall").textContent = fail ? "Fail" : warn ? "Review" : "Pass";
+      $("assistOutput").innerHTML = checks.map(item => `
+        <div class="check-row">
+          <span class="status-pill ${item.status}">${item.status}</span>
+          <div><b>${item.title}</b><div class="small">${item.detail}</div></div>
+        </div>
+      `).join("");
     }
 
     function setMode(mode) {
@@ -900,6 +1142,15 @@
       check("AI guardrail blocks downsizing", guard.includes("Never tell the user a smaller cable is acceptable"));
       check("AI guardrail blocks bypassing protection", guard.includes("bypassing fuses"));
       check("AI guardrail blocks fake compliance", guard.includes("Do not claim compliance"));
+      const oldCable = $("hardwareCable").value;
+      const oldConnector = $("hardwareConnector").value;
+      $("hardwareCable").value = "auto6";
+      $("hardwareConnector").value = "cig";
+      const assistChecks = runDesignChecks();
+      check("Compliance assist flags undersized hardware", assistChecks.some(item => item.status === "fail"));
+      $("hardwareCable").value = oldCable;
+      $("hardwareConnector").value = oldConnector;
+      runDesignChecks();
 
       const passCount = tests.filter(t => t.pass).length;
       const output = tests.map(t => (t.pass ? "PASS  " : "FAIL  ") + t.name + (t.details ? " — " + t.details : "")).join("\n");
@@ -918,13 +1169,20 @@
     $("calcBtn").addEventListener("click", calculate);
     $("resetBtn").addEventListener("click", resetExample);
     $("testBtn").addEventListener("click", runTests);
+    $("runAssistBtn").addEventListener("click", runDesignChecks);
+    ["hardwareCable", "hardwareFuse", "hardwareConnector", "fuseRating", "installEnvironment", "sourceProtection"].forEach(id => {
+      $(id).addEventListener("input", runDesignChecks);
+      $(id).addEventListener("change", runDesignChecks);
+    });
     $("askAiBtn").addEventListener("click", askGroq);
     $("localReviewBtn").addEventListener("click", localSafetyReview);
     $("saveKeyBtn").addEventListener("click", saveKeyLocally);
     $("clearKeyBtn").addEventListener("click", clearKey);
 
+    populateHardwareSelects();
     renderTable([], null);
     calculate();
+    runDesignChecks();
     loadSavedKey();
   </script>
 </body>
